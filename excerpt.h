@@ -41,7 +41,9 @@ int compare_roots(
     fp_t& max_absolute_error, // here the greatest among the smallest deviations of the roots in (roots_to_check) and (roots_ground_truth)
     // will be placed
     // here the greatest relative error among all the roots found will be placed
-    fp_t& max_relative_error);
+    fp_t& max_relative_error,
+    int& excessRoots,
+    int& lostRoots);
 
 // Compares two vectors of roots; root orderings play no role. For each entry in (roots_ground_truth),
 // the closest entry in (roots_to_check) is found and corresponding distance found. Among such distances
@@ -55,7 +57,9 @@ int compare_roots2(
     fp_t& max_absolute_error, // here the greatest among the smallest deviations of the roots in (roots_to_check) and (roots_ground_truth)
     // will be placed
     // here the greatest relative error among all the roots found will be placed
-    fp_t& max_relative_error);
+    fp_t& max_relative_error,
+    int& excessRoots,
+    int& lostRoots);
 
 
 // Creates a test polynomial, both in the form of roots, e.g. (x-roots[0])*(x-roots[1])*(quadratic polynomial with no real roots) and
