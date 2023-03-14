@@ -39,6 +39,23 @@ inline fp_t fms(fp_t a, fp_t b, fp_t c, fp_t d)
     return fma(a, b, cd) - fma(c, d, cd);
 }
 
+template<typename fp_t>
+complex<fp_t> fmac(complex<fp_t> x, complex<fp_t> y, complex<fp_t> z)
+{
+    fp_t r = fma(-x.imag(), y.imag(), fma(x.real(), y.real(), z.real()));
+    fp_t i = fma(y.real(), x.imag(), fma(x.real(), y.imag(), z.imag()));
+
+    return complex<fp_t>(r, i);
+}
+
+template<typename fp_t>
+complex<fp_t> fmsc(complex<fp_t> a, complex<fp_t> b, complex<fp_t> c, complex<fp_t> d)
+{
+    complex<fp_t> cd = -c * d;
+
+    return fmac(a, b, cd) - fmac(c, d, cd);
+}
+
 // Сигнатурная функция
 template <typename fp_t>
 inline int sgn(static const fp_t& x)
@@ -51,6 +68,36 @@ template<typename fp_t>
 inline complex<fp_t> epsilonComplex(complex<fp_t> x)
 {
     return abs(x) * numeric_limits<fp_t>::epsilon() > abs(x.imag()) ? complex<fp_t>(x.real(), 0) : x;
+}
+
+template<typename fp_t>
+inline bool isComplex(static const complex<fp_t>& x)
+{
+    return abs(x) * numeric_limits<fp_t>::epsilon() <= abs(x.imag());
+}
+
+template<typename fp_t>
+fp_t dscrmt(fp_t A, fp_t B, fp_t C)
+{
+    fp_t p = B * B;
+    fp_t q = A * C;
+    //Use the hardware's FMA
+    fp_t dp = std::fma(B, B, -p);
+    fp_t dq = std::fma(A, C, -q);
+    fp_t d = (p - q) + (dp - dq);
+    return d;
+}
+
+template<typename fp_t>
+complex<fp_t> dscrmt(complex<fp_t> A, complex<fp_t> B, complex<fp_t> C) 
+{
+    complex<fp_t> p = B * B;
+    complex<fp_t> q = A * C;
+    //Use the hardware's FMA
+    complex<fp_t> dp = fmac(B, B, -p);
+    complex<fp_t> dq = fmac(A, C, -q);
+    complex<fp_t> d = (p - q) + (dp - dq);
+    return d;
 }
 
 // ======================== ФУНКЦИИ ПОИСКА КОРНЕЙ СТЕПЕННЫХ ПОЛИНОМОВ ======================== //
@@ -67,78 +114,80 @@ unsigned int solveLinear(fp_t a, fp_t b, vector<fp_t>& roots)
 }
 
 /*
-    Имплементация метода решения квадратного уравнения — The Solutions of the Quadratic Equation Obtained by the Aid of the Trigonometry
-    Информация о методе — http://www.jstor.org/stable/3028750
-    Работу выполнил — Пашшоев Бахтиёржон (https://github.com/pashshoev)
+    Имплементация метода решения квадратного уравнения
 */
 template<typename fp_t>
-unsigned int solveQuadratic(fp_t a, fp_t b, fp_t c, vector<fp_t>& roots) 
+unsigned int solveQuadratic(fp_t n, fp_t a, fp_t b, vector<fp_t>& roots)
 {
+    if (isZero(n) || isinf(a /= n))
+        return 0;
+    if (isinf(b /= n))
+        return 0;
+     
+    a /= static_cast<fp_t>(-2.0L);
 
-    // Normalizing
-    if (isZero(a) || isinf(b /= a))
-        return solveLinear(b, c, roots);
-    if (isinf(c /= a)) 
+    fp_t d = dscrmt(n, a, b);
+
+    if (d < 0)
         return 0;
 
-    a = 1;
+    fp_t S = a;
+    S = fma(sqrt(d), (sgn(S) + (S == 0)), S);
 
-    // constants
-    const fp_t oneHalf = static_cast<fp_t>(0.5L);
-    const fp_t pi = static_cast<fp_t>(numbers::pi);
+    fp_t Z1 = S;
+    fp_t Z2 = (b) / S;
 
-    // temp variables
-    fp_t sqrC, tang, tmp;
-    complex<fp_t> alfa;
+    roots[0] = Z1;
+    roots[1] = Z2;
 
-    if (c < 0) 
-    {
-        sqrC = sqrt(-c);
-        tmp = -b / (2 * sqrC);
+    return 2;
+}
 
-        if (isnan(tmp) || isinf(tmp))
-            return 0;
+template<typename fp_t>
+unsigned int solveQuadratic(fp_t n, fp_t a, fp_t b, vector<complex<fp_t>>& roots)
+{
+    if (isZero(n) || isinf(a /= n))
+        return 0;
+    if (isinf(b /= n))
+        return 0;
 
-        alfa = epsilonComplex<fp_t>(-atan<fp_t>(tmp));
+    a /= static_cast<fp_t>(-2.0L);
 
-        if (!alfa.imag()) 
-        {
-            tang = tan(fma<fp_t>(pi, oneHalf, alfa.real()) * oneHalf);
-            roots[0] = -sqrC * tang;
-            roots[1] = sqrC / tang;
+    fp_t d = dscrmt(n, a, b);
+    complex<fp_t> sqrtD = sqrt(complex<fp_t>(d, static_cast<fp_t>(0.0L)));
 
-            if (isnan(roots[1]) || isinf(roots[1]))
-                return 1;
+    complex<fp_t> S(a, static_cast<fp_t>(0.0L));
+    complex<fp_t> partS(sgn(a) + (isZero(a), static_cast<fp_t>(0.0L)));
 
-            return 2;
-        }
+    S = fmac(sqrtD, partS, S);
 
-        return 0; // No real roots
-    }
-    else if (abs(b) >= 2 * sqrt(c))
-    {
-        sqrC = sqrt(c);
-        tmp = -2 * sqrC / b;
+    complex<fp_t> Z1 = S;
+    complex<fp_t> Z2 = (b) / S;
 
-        if (isnan(tmp) || isinf(tmp))
-            return 0;
+    roots[0] = Z1;
+    roots[1] = Z2;
+}
 
-        alfa = epsilonComplex(asin<fp_t>(tmp));
-        tang = tan(alfa.real() * oneHalf);
+template<typename fp_t>
+unsigned int solveQuadratic(complex<fp_t> n, complex<fp_t> a, complex<fp_t> b, vector<complex<fp_t>>& roots)
+{
+    a /= static_cast<fp_t>(-2.0L);
 
-        if (!alfa.imag()) 
-        {
-            roots[0] = sqrC * tang;
-            roots[1] = sqrC / tang;
+    complex<fp_t> d = dscrmt(n, a, b);
+    complex<fp_t> sqrtD = sqrt(complex<fp_t>(d));
 
-            if (isnan(roots[1]) || isinf(roots[1]))
-                return 1; // check if there is no inf
+    complex<fp_t> S(a);
+    complex<fp_t> partS(sgn(a) + (isZero(a.real()) && isZero(a.imag()), static_cast<fp_t>(0.0L)));
 
-            return 2;
-        }
-        return 0; // No real roots
-    }
-    return 0; // D < 0 => No real roots
+    S = fmac(sqrtD, partS, S);
+
+    complex<fp_t> Z1 = S;
+    complex<fp_t> Z2 = (b) / S;
+
+    roots[0] = Z1;
+    roots[1] = Z2;
+
+    return 0;
 }
 
 /*
