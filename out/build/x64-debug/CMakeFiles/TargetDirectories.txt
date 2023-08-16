@@ -1,0 +1,5 @@
+C:/Users/DarklleS/source/repos/polynomials/out/build/x64-debug/CMakeFiles/edit_cache.dir
+C:/Users/DarklleS/source/repos/polynomials/out/build/x64-debug/CMakeFiles/rebuild_cache.dir
+C:/Users/DarklleS/source/repos/polynomials/out/build/x64-debug/polynomials/CMakeFiles/polynomials.dir
+C:/Users/DarklleS/source/repos/polynomials/out/build/x64-debug/polynomials/CMakeFiles/edit_cache.dir
+C:/Users/DarklleS/source/repos/polynomials/out/build/x64-debug/polynomials/CMakeFiles/rebuild_cache.dir
