@@ -24,6 +24,7 @@
 #include <string>
 #include <iomanip>
 #include <complex>
+#include <fstream>
 
 template<typename fp_t>
 const fp_t eps_temp = fp_t();
@@ -103,5 +104,14 @@ int compare_roots_complex(unsigned N_roots_to_check, // number of roots in roots
     // will be placed
     // here the greatest relative error among all the roots found will be placed
     fp_t& max_relative_error);
+
+// Функция вывода в файл сгенерированных коэффициентов и корней
+template<typename fp_t>
+void output_equation(
+    int testCount, // Кол-во экспериментов
+    long double maxDistance, // Максимальное расстояние между корнями
+    int P1, // Кол-во кластеризированных корней
+    int P2 // Кол-во кратных корней
+);
 
 #endif
