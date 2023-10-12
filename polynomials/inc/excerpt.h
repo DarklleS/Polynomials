@@ -105,13 +105,13 @@ int compare_roots_complex(unsigned N_roots_to_check, // number of roots in roots
     // here the greatest relative error among all the roots found will be placed
     fp_t& max_relative_error);
 
-// Функция вывода в файл сгенерированных коэффициентов и корней
+// Р¤СѓРЅРєС†РёСЏ РІС‹РІРѕРґР° РІ С„Р°Р№Р» СЃРіРµРЅРµСЂРёСЂРѕРІР°РЅРЅС‹С… РєРѕСЌС„С„РёС†РёРµРЅС‚РѕРІ Рё РєРѕСЂРЅРµР№
 template<typename fp_t>
 void output_equation(
-    int testCount, // Кол-во экспериментов
-    long double maxDistance, // Максимальное расстояние между корнями
-    int P1, // Кол-во кластеризированных корней
-    int P2 // Кол-во кратных корней
+    int testCount, // РљРѕР»-РІРѕ СЌРєСЃРїРµСЂРёРјРµРЅС‚РѕРІ
+    long double maxDistance, // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ СЂР°СЃСЃС‚РѕСЏРЅРёРµ РјРµР¶РґСѓ РєРѕСЂРЅСЏРјРё
+    int P1, // РљРѕР»-РІРѕ РєР»Р°СЃС‚РµСЂРёР·РёСЂРѕРІР°РЅРЅС‹С… РєРѕСЂРЅРµР№
+    int P2 // РљРѕР»-РІРѕ РєСЂР°С‚РЅС‹С… РєРѕСЂРЅРµР№
 );
 
 #endif
