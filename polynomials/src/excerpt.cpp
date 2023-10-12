@@ -493,6 +493,41 @@ int compare_roots_complex(unsigned N_roots_to_check, // number of roots in roots
         max_absolute_error, max_relative_error, excessRoots, lostRoots);
 }
 
+// Функция вывода в файл сгенерированных коэффициентов и корней
+template<typename fp_t>
+void output_equation(
+    int testCount, // Кол-во экспериментов
+    long double maxDistance, // Максимальное расстояние между корнями
+    int P1, // Кол-во кластеризированных корней
+    int P2 // Кол-во кратных корней
+)
+{
+    std::ofstream fout_coeffs;
+    std::ofstream fout_roots;
+
+    fout_coeffs.open("coeffs.txt");
+    fout_roots.open("roots.txt");
+
+    std::vector<fp_t> coefficients(5); // Вектор коэффициентов полинома
+
+    if (fout_coeffs.is_open() && fout_roots.is_open())
+    {
+        for (size_t i = 0; i < testCount; ++i)
+        {
+            std::vector<fp_t> trueRoots(4);
+            int excessRoots = 0;
+            int lostRoots = 0;
+
+            generate_polynomial<fp_t>(4, 0, P1, P2, static_cast<fp_t>(maxDistance), -1, 1, trueRoots, coefficients);
+            
+            std::sort(trueRoots.begin(), trueRoots.end());
+
+            fout_coeffs << coefficients[3] << " " << coefficients[2] << " " << coefficients[1] << " " << coefficients[0] << std::endl; // coefficients[4] (старший коэфф. ур-ия поумолчанию равен 1)
+            fout_roots << trueRoots[3] << " " << trueRoots[2] << " " << trueRoots[1] << " " << trueRoots[0] << std::endl;
+        }
+    }
+}
+
 template int generate_polynomial<float>(unsigned P, unsigned N_pairs_of_complex_roots, unsigned N_clustered_roots,
     unsigned N_multiple_roots, float max_distance_between_clustered_roots,
     float root_sweep_low, float root_sweep_high, std::vector<float>& roots,
@@ -602,7 +637,9 @@ template int compare_roots_complex<long double>(unsigned N_roots_to_check, // nu
     long double& max_relative_error);
 
 template float pr_product_difference<float>(float a, float b, float c, float d);
-
 template double pr_product_difference<double>(double a, double b, double c, double d);
-
 template long double pr_product_difference<long double>(long double a, long double b, long double c, long double d);
+
+template void output_equation<float>(int testCount, long double maxDistance, int P1, int P2);
+template void output_equation<double>(int testCount, long double maxDistance, int P1, int P2);
+template void output_equation<long double>(int testCount, long double maxDistance, int P1, int P2);
